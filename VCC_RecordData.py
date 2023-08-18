@@ -47,7 +47,7 @@ def record(channel_data=[], time_stamps=[], KillSwitch=None, time_vect=[], data_
             try:
                 sample, time_stamp = inlet.pull_sample()
                 time_stamp += inlet.time_correction()
-                curr_samp = sampcount*(1/250)
+                curr_samp = sampcount*(1/125)
 
                 time_stamps.append(time_stamp)
                 channel_data.append(sample)   # Vector with a column for each channel
@@ -76,32 +76,26 @@ def record(channel_data=[], time_stamps=[], KillSwitch=None, time_vect=[], data_
         return False
 
 class RecordData():
-    def __init__(self, Fs, age, gender="male", record_func=record):
-        # timepoints when the images are displayed.
+    def __init__(self, Fs, age, disptime, gender="male", record_func=record):  #define __init__() method.
+        # Create instance variables.
         self.trial = []
-
         self.X = []
-
         self.trial_time_stamps = []
         self.time_stamps       = []
         self.time_vect         = []
         self.trial_timevect    = []
         self.trial_data        = []
         self.X_noninc          = []
-
-        self.killswitch = KillSwitch()
-
-        self.Y = []
-
-        # sampling frequncy
         self.Fs = Fs
-
-        self.gender   = gender
-        self.age      = age
+        self.disptime = disptime
+        self.gender = gender
+        self.age = age
         self.add_info = ""
+        self.killswitch = KillSwitch()
+        self.Y = []
+        self.currimage_name = []
 
-        recording_thread = threading.Thread(group=None,
-            target=record_func,
+        recording_thread = threading.Thread(group=None, target=record_func,
             args=(self.X, self.time_stamps, self.killswitch, self.time_vect, self.X_noninc),
         )
         recording_thread.daemon = True
@@ -120,11 +114,12 @@ class RecordData():
         yield 'time_vect'        , self.time_vect
         yield 'trial_data'       , self.trial_data
         yield 'trial_timevect'   , self.trial_timevect
+        yield 'disptime'         , self.disptime
 
     def add_trial(self, label, to_add=[]):
 
         if label == 0:
-            N = self.Fs * 8  # Define the 15second interval
+            N = self.Fs * self.disptime  # Define 60second interval
             curr_data = self.X_noninc
             print("Trial length in samples is:" + str(len(curr_data[-N:])))
             self.trial_data.append(curr_data[-N:])  # Pass only the 15seconds to the frequency analysis.
@@ -132,8 +127,8 @@ class RecordData():
             print("current trial data dimension: " + str(np.shape(curr_data[-N:])))
             print("Pause Label: " + str(label))
             self.trial_data.append(to_add)
-        elif label > 0:
-            print(f"Trial label: {str(label)}")
+        else:
+            print(f"Trial label: {label}")
 
         self.trial_time_stamps.append(pylsl.local_clock())  # Get the time at the start of the trial.
         self.Y.append(label)
@@ -163,6 +158,6 @@ class RecordData():
 
         return file_name
 
-
-
+if __name__ == '__main__':
+    record()
 

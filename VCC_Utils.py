@@ -5,9 +5,9 @@ import os
 import sys
 import time as tme
 from subprocess import Popen
-import cv2
-import pandas as pd
 import random
+
+import VCC_ImageDisplay
 from VCC_RecordData import *
 
 pygame.init()
@@ -91,7 +91,6 @@ def render_waiting_screen(text_string=None, time_black=0.0):
             pygame.display.update()
 
 
-
 def begin_VCC_video():
     print("Playing opening video")
     video_path = "/Videos/"
@@ -104,7 +103,7 @@ def begin_VCC_video():
     #     cv2.imshow('frame', frame)
 
 
-def begin_VCC_images():
+def begin_VCC_images(Imgclass, Trialnum, picnum):
     if not os.path.isdir("REC"):
         os.mkdir("REC")
     # Create a welcome screen
@@ -113,9 +112,16 @@ def begin_VCC_images():
     render_waiting_screen("2", time_black=2.0)
     render_waiting_screen("1", time_black=2.0)
 
-    recorder = RecordData(250., 20.)   # First arg = Fs, second arg = participant age.
+    recorder = RecordData(250., 20., 60)   # First arg = Fs, second arg = participant age.
     render_waiting_screen(text_string=None, time_black=2.0)
     recorder.start_recording()
+
+    for i in range(int(Trialnum)):
+
+        recorder.add_trial(Imgclass)
+        VCC_ImageDisplay.image_disp(Imgclass, picnum)
+        tdata = recorder.add_trial(0.)
+
 
 
 

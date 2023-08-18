@@ -15,7 +15,8 @@ if __name__ == "__main__":
         print(f"Screen name is {M.name}\n Screen width is {M.width}\n Screen height is {M.height}\n")
 
         if str(args[1]) == "VCC_images":
-            begin_VCC_images(args[2])    # Call of function to begin experiment
+
+            begin_VCC_images(args[2], args[3], 12)    # Call of function to begin experiment
 
         elif str(args[1]) == "VCC_video":
             begin_VCC_video()            # Call of function to play the introductory video

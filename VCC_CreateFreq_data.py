@@ -45,6 +45,43 @@ def trialT_divide(tdataIn, ftimes, olap, srate):
     return data_frames
 
 
+def normalize_Znorme(arr):
+    """
+    # Programmé par Gilles Pouchoulin (2023)
+    Normalisation d'un tenseur de type par rapport à la moyenne et à la variance (centrer-réduire)
+    i.e. où chaque vecteur de l'axe 0 est normalisé  pour obtenir une distribution de moyenne 0 et
+    de variance 1.
+    Parameters
+    ----------
+
+    arr : numpy.ndarray shape (row, col) par exemple (19, 7680)
+
+        Tenseur de dimension 2 à normaliser.
+
+    Returns
+
+    -------
+
+    new_arr : numpy.ndarray shape (row, col) par exemple (19, 7680)
+
+        Tenseur de dimension 2 normalisé.
+
+    """
+
+    assert arr.ndim == 2, "Erreur "
+
+    row_means = arr.mean(axis=1)
+
+    row_stds = arr.std(axis=1)
+
+    new_arr = np.zeros(arr.shape)
+
+    for i, (row, row_mean, row_std) in enumerate(zip(arr, row_means, row_stds)):
+        new_arr[i, :] = (row - row_mean) / row_std
+
+    return new_arr
+
+
 data_path = '/Users/bolger/Documents/work/Projects/Visions_ClimateChange/DEAP/Data/'
 filesave_path = '/Users/bolger/Documents/work/Projects/Visions_ClimateChange/DEAP/DataFiles'
 path_contents = os.listdir(data_path)
@@ -62,6 +99,7 @@ Tdrop = 3    # Time to drop from the start of each trial (in seconds)
 Tdrop_samps= srate * Tdrop
 
 for i, currfile in enumerate(datFiles):  # Range of user.
+
     data_curr = os.path.join(data_path, currfile)
     dataIn = pickle5.load(open(data_curr, 'rb'), encoding='latin1')
     AllData = dataIn['data']
@@ -73,7 +111,9 @@ for i, currfile in enumerate(datFiles):  # Range of user.
     for trl in range(nTrial):  # Trial range
 
         currtrl_data = AllData[trl, 0:32, Tdrop_samps-1:-1]  # Taking out the first 3 seconds of the trial data
-        F = trialT_divide(currtrl_data, num_frame, overlap, srate)
+        # Z-norm data here.
+        currtrl_znorm = normalize_Znorme(currtrl_data)
+        F = trialT_divide(currtrl_znorm, num_frame, overlap, srate)
         tnum, channum, sampnum = np.shape(F)
 
         psd_trial = []
@@ -87,5 +127,5 @@ for i, currfile in enumerate(datFiles):  # Range of user.
         PSD_swop = np.moveaxis(PSD_alltrials, 1,1)   # Change order of dimensions to yield 40 X 32 X 19 X 3
 
         fnom1 = currfile.split('.')
-        curr_fnom = os.path.join('../Image_classify/Sujet_PSD', fnom1[0] + '_PSD_frame.npy')
+        curr_fnom = os.path.join('../VCC_Realtime_task/Sujet_PSD_znorm', fnom1[0] + '_PSD_frame.npy')
         np.save(curr_fnom, np.array(PSD_swop, dtype=object), allow_pickle=True)   # Save as a numpy array.
