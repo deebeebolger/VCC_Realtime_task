@@ -74,7 +74,7 @@ def record(channel_data=[], time_stamps=[], KillSwitch=None, time_vect=[], data_
         return False
 
 class RecordData():
-    def __init__(self, Fs, age, disptime, pic_number, gender="male", record_func=record):  #define __init__() method.
+    def __init__(self, Fs, sujnom, disptime, pic_number, gender="male", record_func=record):  #define __init__() method.
         # Create instance variables.
         self.trial = []
         self.X = []
@@ -87,7 +87,7 @@ class RecordData():
         self.Fs = Fs
         self.disptime = disptime
         self.gender = gender
-        self.age = age
+        self.sujnom = sujnom
         self.add_info = ""
         self.killswitch = KillSwitch()
         self.Y = []
@@ -98,15 +98,15 @@ class RecordData():
         self.freqband_data = []
 
         recording_thread = threading.Thread(group=None, target=record_func,
-            args=(self.X, self.time_stamps, self.killswitch, self.time_vect, self.X_noninc),
-        )
+                                            args=(self.X, self.time_stamps, self.killswitch, self.time_vect, self.X_noninc),
+                                            )
         recording_thread.daemon = True              # define daemon thread to execute in background.
         self.recording_thread   = recording_thread
 
     def __iter__(self):
         # Data to return
         yield 'trial'            , self.trial
-        yield 'age'              , self.age
+        yield 'sujnom'           , self.sujnom
         yield 'X'                , self.X
         yield 'time_stamps'      , self.time_stamps
         yield 'trial_time_stamps', self.trial_time_stamps
@@ -163,15 +163,6 @@ class RecordData():
                     self.trial.append(j - 1)
                     i = j
                     break
-
-    def stop_recording_and_dump(self, file_name="session_" + time_str() + ".mat"):
-        self.set_trial_start_indexes()
-        sio.savemat(file_name, dict(self))
-
-
-
-        return file_name
-
 
 
     def preprocess_data(self):
@@ -235,6 +226,16 @@ class RecordData():
         Freqband_arr = np.asarray(fband_trial)
         self.freqband_data = Freqband_arr
         return Freqband_arr
+
+    def stop_recording_and_dump(self, file_name="session_" + time_str() + ".mat"):
+        self.set_trial_start_indexes()
+        sio.savemat(file_name, dict(self))
+
+        fnom = self.sujnom +'_'+time_str()
+        curr_fnom = os.path.join('../VCC_Realtime_task/Sujets_PSD4Model', fnom + '_PSD_frame.npy')
+        np.save(curr_fnom, np.array(self.freqband_data, dtype=object), allow_pickle=True)  # Save as a numpy array.
+
+        return file_name
 
 
 if __name__ == '__main__':

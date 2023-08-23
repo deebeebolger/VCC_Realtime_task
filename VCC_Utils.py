@@ -99,7 +99,7 @@ def begin_VCC_video():
     #     cv2.imshow('frame', frame)
 
 
-def begin_VCC_images(Imgclass, Trialnum, picnum, pdisp_time):
+def begin_VCC_images(Imgclass, Trialnum, picnum, pdisp_time, sujnum):
 
     if not os.path.isdir("REC"):
         os.mkdir("REC")
