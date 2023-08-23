@@ -35,10 +35,6 @@ def render_waiting_screen(text_string=None, time_black=0.0):
         timer_event = USEREVENT + 1
         pygame.time.set_timer(timer_event, int(time_black) * 1000)
         myfont = pygame.font.SysFont("arial", 60)
-        if text_string:
-            textsurface1 = myfont.render(text_string, False, (255, 255, 255))
-            text_rect1   = textsurface1.get_rect(center=(display_x / 2, display_y / 2 - 100))
-        window.blit(textsurface1, text_rect1)
     else:
         myfont = pygame.font.SysFont("arial", 30)
         press_string = "Please press the Space Bar to continue..."
@@ -103,24 +99,42 @@ def begin_VCC_video():
     #     cv2.imshow('frame', frame)
 
 
-def begin_VCC_images(Imgclass, Trialnum, picnum):
+def begin_VCC_images(Imgclass, Trialnum, picnum, pdisp_time):
+
     if not os.path.isdir("REC"):
         os.mkdir("REC")
     # Create a welcome screen
     render_waiting_screen("Welcome to Visions of Climate Change")
-    render_waiting_screen("3", time_black=2.0)
-    render_waiting_screen("2", time_black=2.0)
-    render_waiting_screen("1", time_black=2.0)
-
-    recorder = RecordData(250., 20., 60)   # First arg = Fs, second arg = participant age.
-    render_waiting_screen(text_string=None, time_black=2.0)
-    recorder.start_recording()
 
     for i in range(int(Trialnum)):
 
+        print(f"Trial number {str(i)}")
+
+        recorder = []
+        recorder = RecordData(125., 20., pdisp_time, picnum)  # First arg = Fs, second arg = participant age.
+        render_waiting_screen(text_string=None, time_black=2.0)
+        recorder.start_recording()
         recorder.add_trial(Imgclass)
-        VCC_ImageDisplay.image_disp(Imgclass, picnum)
+        VCC_ImageDisplay.image_disp('Images_Class1', picnum, pdisp_time)
+        print(f"Finished trial {str(i)}")
         tdata = recorder.add_trial(0.)
+
+        # Put in function here to carry out frequency analysis.
+        tdata_filt = recorder.preprocess_data()  # Filter and re-organize electrode order.
+        tdata_znorme = recorder.Znorme_calc()    # Znormalise the data.
+        recorder.freqband_calc()
+
+
+
+        render_waiting_screen(text_string=None, time_black=2.0)
+        filename = "REC/%s_%s.mat" % (time_str(), Imgclass)
+        recorder.stop_recording_and_dump(filename)
+        recorder.killswitch.terminate = True
+        recorder = None
+
+    render_waiting_screen("That was the last one, thank you for participation!")
+    sys.exit()
+
 
 
 

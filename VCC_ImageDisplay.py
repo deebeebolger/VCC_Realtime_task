@@ -13,7 +13,7 @@ def fadeout(wides, heights, screen):
         screen.blit(fadout,(0, 0))
         pygame.display.update()
 
-def image_disp(iclass, inumber):
+def image_disp(iclass, inumber, disptime):
     pygame.init()
 
     currdir = '/Users/bolger/PycharmProjects/VCC_Realtime_task'
@@ -30,8 +30,8 @@ def image_disp(iclass, inumber):
 
     if iclass == "randomize":
         print("Randomly selecting image class...")
-        class_choice = random_secure.choice(PicClass)  # Randomly select the inumber of images to present.
-        print(f"Randomly chosen image is {class_choice}.")
+        #class_choice = random_secure.choice(PicClass)  # Randomly select the inumber of images to present.
+        #print(f"Randomly chosen image is {class_choice}.")
 
     elif "Images" in iclass:
         print(f"Image class already defined: {iclass}. ")
@@ -43,9 +43,20 @@ def image_disp(iclass, inumber):
     figs_choice   = random_secure.sample(Figs, inumber)
 
     # Need to write the name of the ImageClass presented to file.
+    file_savepath = os.path.join(currdir, "TrialData")
+    if not os.path.exists(file_savepath):
+        os.makedirs(file_savepath)
+
+    fname = class_choice+"_images.txt"
+    fname_path = os.path.join(file_savepath, fname)
+    file_image = open(fname_path, "w")
+    file_image.write(iclass+"\n")
 
     for icnt, currimg in enumerate(figs_choice):
-        print(f"{str(icnt)}")
+
+        # write the name of image class and current image file to file.
+        file_image.write(currimg+"\n")
+
         currpath = os.path.join(currdir, 'FAICC_Images', class_choice, currimg)
         image = pygame.image.load(currpath)
 
@@ -83,9 +94,10 @@ def image_disp(iclass, inumber):
         while show_img == True:
             time_diff = (pygame.time.get_ticks() - start_tick) / 1000  # calculate the time interval in seconds
             # print(f'time passed {time_diff}secs')
-            if time_diff >= 8:
+            if time_diff >= disptime:
                 fadeout(screen_w, screen_h, window)
                 show_img = False
 
     # Need to put up a finish image/message here
     pygame.quit()
+    file_image.close()

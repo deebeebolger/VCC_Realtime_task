@@ -17,7 +17,7 @@ def trialT_divide(tdataIn, ftimes, olap, srate):
     """
 
     :param tdataIn: channel X ntime data for current trial
-    :param fnumber: the number of frames into which to divide the current trial
+    :param ftimes : the length of each frame in seconds.
     :param olap:    the overlap when dividing the trial into frames
     :return:        list of start and end samples for each frame (length = 10)
     """

@@ -4,13 +4,11 @@ import numpy as np
 
 def PSD_calc(data, fsamp):
 
-    fs = fsamp
-
-    freqs, Pxx_den = signal.welch(data, fs, nperseg=128)
+    freqs, Pxx_den = signal.welch(data, fsamp, nperseg=128)
     fidx = [fcnt for fcnt, fcurr in enumerate(freqs) if fcurr >= 4 and fcurr <= 45]
 
-    plt.plot(freqs[fidx], 20*np.log10(Pxx_den[15, fidx]))
-    plt.title('PSD of Pz electrode (all videos)')
+    plt.plot(freqs[fidx], 20*np.log10(Pxx_den[6, fidx]))
+    plt.title('PSD of Cz electrode (all videos)')
     plt.ylabel('PSD (dB)')
     plt.xlabel('Frequency (Hz)')
     plt.xlim([4, 45])
@@ -34,4 +32,3 @@ def PSD_calc(data, fsamp):
     Allbands = np.transpose(Allbands)
 
     return Allbands
-
